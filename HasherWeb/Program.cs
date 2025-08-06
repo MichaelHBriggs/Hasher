@@ -14,6 +14,7 @@ namespace HasherWeb
         {
             IConfiguration config = new ConfigurationBuilder()
                                         .AddJsonFile("AppSettings.json")
+                                        .AddUserSecrets<Program>()
                                         .Build();
 
             ILoggerFactory factory = LoggerFactory.Create(builder =>
@@ -83,7 +84,7 @@ namespace HasherWeb
             app.UseStaticFiles();
 
             // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
+            if (true || app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();

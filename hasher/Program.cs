@@ -17,6 +17,7 @@ namespace hasher
         {
             IConfiguration config = new ConfigurationBuilder()
                                         .AddJsonFile("AppSettings.json")
+                                        .AddUserSecrets<Program>()
                                         .Build();
 
             ILoggerFactory factory = LoggerFactory.Create(builder =>
