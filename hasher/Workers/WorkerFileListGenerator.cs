@@ -1,0 +1,138 @@
+﻿using HasherDataObjects.Models;
+using Microsoft.Extensions.Logging;
+using System.Diagnostics;
+
+namespace hasher.Workers
+{
+    public class WorkerFileListGenerator(ILogger<WorkerFileListGenerator> logger) : IWorker<JobInfo, IList<string>>
+    {
+        public async Task<IList<string>> DoWork(JobInfo arg)
+        {
+            List<string> fileList = [];
+            TraverseTreeParallelForEach(arg.RootFolder, (file) =>
+            {
+                // Check if the file has one of the specified extensions.
+                if (arg.Extensions.Count == 0 || arg.Extensions.Any(ext => file.EndsWith(ext, StringComparison.OrdinalIgnoreCase)))
+                {
+                    fileList.Add(file);
+                }
+            }, logger);
+            return fileList.Order().ToList();
+        }
+
+        private static void TraverseTreeParallelForEach(string root, Action<string> action, ILogger<WorkerFileListGenerator> logger)
+        {
+            //Count of files traversed and timer for diagnostic output
+            int fileCount = 0;
+            var sw = Stopwatch.StartNew();
+
+            // Determine whether to parallelize file processing on each folder based on processor count.
+            int procCount = Environment.ProcessorCount;
+
+            // Data structure to hold names of subfolders to be examined for files.
+            Stack<string> dirs = new();
+
+            if (!Directory.Exists(root))
+            {
+                throw new ArgumentException(
+                    "The given root directory doesn't exist.", nameof(root));
+            }
+            dirs.Push(root);
+
+            while (dirs.Count > 0)
+            {
+                string currentDir = dirs.Pop();
+                string[] subDirs = { };
+                string[] files = { };
+
+                try
+                {
+                    subDirs = Directory.GetDirectories(currentDir);
+                }
+                // Thrown if we do not have discovery permission on the directory.
+                catch (UnauthorizedAccessException e)
+                {
+                    logger.LogInformation(e.Message);
+                    continue;
+                }
+                // Thrown if another process has deleted the directory after we retrieved its name.
+                catch (DirectoryNotFoundException e)
+                {
+                    logger.LogInformation(e.Message);
+                    continue;
+                }
+
+                try
+                {
+                    files = Directory.GetFiles(currentDir);
+                }
+                catch (UnauthorizedAccessException e)
+                {
+                    logger.LogInformation(e.Message);
+                    continue;
+                }
+                catch (DirectoryNotFoundException e)
+                {
+                    logger.LogInformation(e.Message);
+                    continue;
+                }
+                catch (IOException e)
+                {
+                    logger.LogInformation(e.Message);
+                    continue;
+                }
+
+                // Execute in parallel if there are enough files in the directory.
+                // Otherwise, execute sequentially.Files are opened and processed
+                // synchronously but this could be modified to perform async I/O.
+                try
+                {
+                    if (files.Length < procCount)
+                    {
+                        foreach (var file in files)
+                        {
+                            action(file);
+                            fileCount++;
+                        }
+                    }
+                    else
+                    {
+                        Parallel.ForEach(files, () => 0,
+                            (file, loopState, localCount) =>
+                            {
+                                action(file);
+                                return (int)++localCount;
+                            },
+                            (c) =>
+                            {
+                                Interlocked.Add(ref fileCount, c);
+                            });
+                    }
+                }
+                catch (AggregateException ae)
+                {
+                    ae.Handle((ex) =>
+                    {
+                        if (ex is UnauthorizedAccessException)
+                        {
+                            // Here we just output a message and go on.
+                            logger.LogInformation(ex.Message);
+                            return true;
+                        }
+                        // Handle other exceptions here if necessary...
+
+                        return false;
+                    });
+                }
+
+                // Push the subdirectories onto the stack for traversal.
+                // This could also be done before handing the files.
+                foreach (string str in subDirs)
+                    dirs.Push(str);
+            }
+
+            // For diagnostic purposes.
+            logger.LogInformation($"[{Thread.CurrentThread.ManagedThreadId}] Processed {fileCount} files in {sw.ElapsedMilliseconds} milliseconds");
+        }
+    }
+}

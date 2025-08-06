@@ -1,0 +1,12 @@
+@HasherWeb_HostAddress = http://localhost:5183
+
+GET {{HasherWeb_HostAddress}}/api/Run/
+Accept: application/json
+
+GET {{HasherWeb_HostAddress}}/api/Jobs/
+Accept: application/json
+
+GET {{HasherWeb_HostAddress}}/api/File/
+Accept: application/json
+
+###
