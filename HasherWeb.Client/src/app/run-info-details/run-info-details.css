@@ -1,0 +1,13 @@
+.Active {
+    border-color: aqua;
+    border-style: solid;
+    border-width: 3px;
+    border-radius: 5px;
+}
+
+.Inactive {
+    border-color: black;
+    border-style: solid;
+    border-width: 3px;
+    border-radius: 5px;
+}

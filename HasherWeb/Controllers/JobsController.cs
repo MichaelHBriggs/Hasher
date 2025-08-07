@@ -19,8 +19,8 @@ namespace HasherWeb.Controllers
             return DBContext.Jobs.Count(j => j.DeletedAt == null);
         }
 
-        [HttpGet("GetAllJobsForRunByPage/{pageNumber}/{pageSize}")]
-        public List<JobInfo> GetAllJobsForRunByPage(int pageNumber, int pageSize)
+        [HttpGet("GetAllJobsByPage/{pageNumber}/{pageSize}")]
+        public List<JobInfo> GetAllJobsByPage(int pageNumber, int pageSize)
         {
             return DBContext.Jobs
                 .Where(j => j.DeletedAt == null)

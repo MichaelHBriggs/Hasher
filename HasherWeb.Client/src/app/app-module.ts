@@ -1,5 +1,6 @@
 import { NgModule, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
+import { MatGridListModule } from '@angular/material/grid-list';
 
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { HttpErrorInterceptor } from './interceptors/HttpErrorInterceptor';
@@ -9,6 +10,7 @@ import { App } from './app';
 
 import { RunInfo } from '../app/run-info/run-info'
 import { RunRestService } from './RestServices/runs.rest.service';
+import { SecondsToHhMmSsPipe } from './seconds-to-hh-mm-ss-pipe';
 
 @NgModule({
   declarations: [
@@ -18,7 +20,9 @@ import { RunRestService } from './RestServices/runs.rest.service';
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
-    RunInfo
+    RunInfo,
+    MatGridListModule,
+    SecondsToHhMmSsPipe
   ],
   providers: [
     provideBrowserGlobalErrorListeners(),

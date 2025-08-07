@@ -44,6 +44,28 @@ namespace HasherWeb.Controllers
             return Ok(files);
         }
 
+        [HttpGet("GetFileCountByExtensionByJob/{jobId}")]
+        public ActionResult<Dictionary<string,int>> GetFileCountByExtensionByJob(Guid jobId)
+        {
+            var job = DBContext.Jobs.FirstOrDefault(j => j.Id == jobId && !j.IsDeleted);
+            if (job == null)
+            {
+                return NotFound();
+            }
+            var counts = DBContext.Files
+                .Where(f => f.LastJob == job && !f.IsDeleted)
+                .GroupBy(f => f.Extension)
+                .Select(group => new KeyValuePair<string, int>(group.Key, group.Count()))
+                .ToList();
+            if (counts.Any())
+            {
+                Dictionary<string, int> result = [];
+                counts.ForEach(kv => result.Add(kv.Key, kv.Value));
+                return Ok(result);
+            }
+            return NotFound();
+        }
+
 
     }
 }
