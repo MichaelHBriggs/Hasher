@@ -134,7 +134,8 @@ namespace hasher.Threads
                         WorkerEmailerData emailData = new()
                         {
                             ChangedHashes = changedHashes,
-                            MissingFileList = untouchedFiles.Select(f => $"{GeneratePath(f.Folder)}\\{f.Name}").ToList()
+                            MissingFileList = untouchedFiles.Select(f => $"{GeneratePath(f.Folder)}\\{f.Name}").ToList(),
+                            RunResults = runResults
                         };
                         WorkerEmailer emailer = services.GetRequiredService<WorkerEmailer>();
                         bool emailSent = await emailer.DoWork(emailData);

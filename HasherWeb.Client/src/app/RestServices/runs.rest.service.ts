@@ -21,4 +21,8 @@ export class RunRestService extends RestService {
     getAllRuns(): Observable<RunResults[]> {
         return  this.get<RunResults[]>(this.endpoint + "/GetAllRuns").pipe(retry(3));
     }
+
+    getSpecificRun(id:string): Observable<RunResults> {
+        return this.get<RunResults>(this.endpoint + "/GetSpecificRun/" + id).pipe(retry(3));
+    }
 }

@@ -1,10 +1,12 @@
-import { Component, Input, signal  } from '@angular/core';
+import { Component, Input, signal, ViewChild, ChangeDetectorRef  } from '@angular/core';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { RunResults } from "../DataObjects/runResults"
 import { CommonModule, formatDate } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { JobDetails } from "../job-details/job-details"
 import { SecondsToHhMmSsPipe } from '../seconds-to-hh-mm-ss-pipe';
+import { interval, Subscription } from 'rxjs';
+import { RunRestService } from '../RestServices/runs.rest.service';
 
 @Component({
   selector: 'app-run-info-details',
@@ -21,11 +23,17 @@ import { SecondsToHhMmSsPipe } from '../seconds-to-hh-mm-ss-pipe';
   `,
   styleUrl: './run-info-details.css'
 })
-export class RunInfoDetails {
+export class RunInfoDetails  {
   @Input() runResult!:RunResults;
+  @ViewChild(JobDetails) jobDetails!:JobDetails;
 
-  private RefreshTimeInSeconds=10;
+  private RefreshTimeInSeconds=1;
+  private refreshSubscription: Subscription = Subscription.EMPTY;
+
+  constructor( private api:RunRestService, private cdr: ChangeDetectorRef){}
+
   ngOnInit():void {
+    console.log("ngOnInit()");
     if (this.runResult.isActive){
       console.log("starting refresh timer");
       this.startTimer();
@@ -33,6 +41,8 @@ export class RunInfoDetails {
   }
 
   ngOnDestroy() {
+    console.log("ngOnDestroy()");
+    this.stopTimer();
   }
 
   get hostClass(): string {
@@ -43,10 +53,29 @@ export class RunInfoDetails {
   }
 
   startTimer(){
-
+      console.log("startTimer()");
+      if (this.refreshSubscription == Subscription.EMPTY){
+        this.refreshSubscription = interval(1000 * this.RefreshTimeInSeconds)
+          .subscribe(() => this.api.getSpecificRun(this.runResult.id).subscribe(data => {
+            console.log("Got fresh run information");
+            this.runResult=data;
+            if (this.jobDetails){
+              this.jobDetails.refreshData();
+            }
+            this.cdr.markForCheck();
+            this.cdr.detectChanges();
+            if (!this.runResult.isActive){
+              this.stopTimer();
+            }
+          }));
+      }
   }
 
   stopTimer() {
+    console.log("stopTimer()");
+    if (this.refreshSubscription) {
+      this.refreshSubscription.unsubscribe();
+    }
   }
 
   
