@@ -37,10 +37,17 @@ namespace HasherWeb.Controllers
                 .Where(rr => rr.Id == runId && rr.DeletedAt == null)
                 .OrderByDescending(rr => rr.CreatedAt)
                 .FirstOrDefault();
-
-            return DBContext.Jobs.Where(j => j.MostRecentRun == runResults && j.DeletedAt == null)
-                                 .OrderByDescending(j => j.CreatedAt)
-                                 .ToList();
+            try
+            {
+                return DBContext.Jobs.Where(j => j.MostRecentRun == runResults && j.DeletedAt == null)
+                                     .OrderByDescending(j => j.CreatedAt)
+                                     .ToList();
+            }
+            catch
+            {
+                Thread.Sleep(100);
+                return GetJobsForRun(runId);
+            }
         }
     }
 }
