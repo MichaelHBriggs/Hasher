@@ -19,6 +19,10 @@ namespace HasherDataObjects.Models
         [JsonIgnore]
         public List<HashableFile> Files { get; set; } = [];
 
+        public bool isActive { get; set; } = false;
+
+        public float ChunkSizePercent { get; set; } = .05f;
+
         [NotMapped]
         public double PercentHashed
         {
@@ -52,6 +56,7 @@ namespace HasherDataObjects.Models
             RootFolder = sourceFolder.RootFolder;
             Name = sourceFolder.Name;
             Extensions.AddRange(sourceFolder.Extensions);
+            isActive = true;
         }
 
         public override string ToString()

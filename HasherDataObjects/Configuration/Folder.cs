@@ -10,5 +10,7 @@ namespace HasherDataObjects.Configuration
         public string RootFolder { get; set; } = string.Empty;
         [JsonPropertyName("Extensions")]
         public List<string> Extensions { get; set; } = [];
+        [JsonPropertyName("ChunkSizePercent")]
+        public int chunkSizePercent { get; set; } = 5;
     }
 }

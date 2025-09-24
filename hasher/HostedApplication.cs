@@ -123,6 +123,7 @@ namespace hasher
 
                     JobInfo dbJobInfo = hasherContext.Jobs.Add(new JobInfo(folder)).Entity;
                     dbJobInfo.MostRecentRun = runResults;
+                    dbJobInfo.ChunkSizePercent = (float)folder.chunkSizePercent / 100f;
                     hasherContext.SaveChanges();
                     worker.Start();
                     StartupData startupData = new StartupData()

@@ -20,6 +20,12 @@ namespace hasher
                                         .AddUserSecrets<Program>()
                                         .Build();
 
+            bool testMode = false;
+            if (args.Length > 0 && args[0].ToLower() == "test")
+            {
+                testMode = true;
+            }
+
             ILoggerFactory factory = LoggerFactory.Create(builder =>
             {
                 builder.AddConsole();
@@ -36,8 +42,8 @@ namespace hasher
             {
                 loggingBuilder.ClearProviders();
                 loggingBuilder.AddConsole();
-                
-                
+
+
                 IConfigurationSection loggingConfig = config.GetSection("Logging");
                 if (loggingConfig.Exists())
                 {
@@ -56,7 +62,7 @@ namespace hasher
                     logger.LogWarning("Logging configuration section not found in AppSettings.json. Using default console logging.");
                 }
             });
-            
+
             builder.Services.AddTransient<WorkerFileListGenerator>();
             builder.Services.AddTransient<WorkerHashGenerator>();
             builder.Services.AddTransient<MainWorkerThread>();
@@ -65,20 +71,36 @@ namespace hasher
             builder.Services.AddTransient<WorkerEmailer>();
             builder.Services.AddSingleton<IConfiguration>(x => config);
             builder.Services.AddSingleton<Settings>(x => config!.GetSection("AppSettings")!.Get<Settings>()!);
-            builder.Services.AddDbContext<HasherContext>(options =>
+            if (testMode)
             {
-                Settings? settings = config.GetSection("AppSettings").Get<Settings>();
-                _ = settings ?? throw new ArgumentNullException(nameof(settings), "Settings cannot be null");
-                options.UseSqlServer(settings.HasherDBConnectionString, b => b.MigrationsAssembly("hasher"));
-                options.UseLoggerFactory(factory);
-                options.EnableSensitiveDataLogging(false);
-                options.EnableDetailedErrors(true);
-            });
+                builder.Services.AddDbContext<HasherContext>(options =>
+                {
+                    Settings? settings = config.GetSection("AppSettings").Get<Settings>();
+                    _ = settings ?? throw new ArgumentNullException(nameof(settings), "Settings cannot be null");
+                    options.UseInMemoryDatabase("HasherTestDB");
+                    options.UseLoggerFactory(factory);
+                    options.EnableSensitiveDataLogging(true);
+                    options.EnableDetailedErrors(true);
+                });
+            }
+            else { 
+                builder.Services.AddDbContext<HasherContext>(options =>
+                {
+                    Settings? settings = config.GetSection("AppSettings").Get<Settings>();
+                    _ = settings ?? throw new ArgumentNullException(nameof(settings), "Settings cannot be null");
+                    options.UseSqlServer(settings.HasherDBConnectionString, b => b.MigrationsAssembly("hasher"));
+                    options.UseLoggerFactory(factory);
+                    options.EnableSensitiveDataLogging(false);
+                    options.EnableDetailedErrors(true);
+                });
+            }
             builder.Services.AddHostedService<HostedApplication>();
 
             IHost app = builder.Build();
-
-            app.Services.GetRequiredService<HasherContext>().Database.Migrate();
+            if (!testMode)
+            {
+                app.Services.GetRequiredService<HasherContext>().Database.Migrate();
+            }
 
             await app.RunAsync();
         }

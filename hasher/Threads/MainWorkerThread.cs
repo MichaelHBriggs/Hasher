@@ -131,6 +131,15 @@ namespace hasher.Threads
             }
             else
             {
+                if (_jobInfo != null)
+                {
+                    await DatabaseSemaphore.WaitAsync();
+                    logger.LogDebug($"[{Thread.CurrentThread.ManagedThreadId} - {_thread.Name}] Got Semaphore");
+                    _jobInfo.isActive = false;
+                    _sendThingForUpdateMessage?.Invoke(new AuditableThingUpdateMessage(_jobInfo, AuditableThingUpdateThread.MSG_JOB_INFO_UPDATE));
+                    logger.LogDebug($"[{Thread.CurrentThread.ManagedThreadId} - {_thread.Name}] Releasing Semaphore");
+                    DatabaseSemaphore.Release();
+                }
                 logger.LogInformation($"[{Thread.CurrentThread.ManagedThreadId} - {_thread.Name}] All files processed for job: {(_jobInfo != null ? _jobInfo.Name : "unknown")}");
                 CancelAsync();
             }
@@ -166,7 +175,7 @@ namespace hasher.Threads
                 if (!CancellationPending)
                 {
                     logger.LogInformation($"[{Thread.CurrentThread.ManagedThreadId} - {_thread.Name}] Generating hash for file: {file}");
-                    string hashResults = hashGenerator.DoWork(file).Result;
+                    string hashResults = hashGenerator.DoWork(new Tuple<string,float>(file, _jobInfo.ChunkSizePercent)).Result;
                     if (!string.IsNullOrEmpty(hashResults))
                     {
                         _fileListWithHashes.Add(new FileInfoWithHash(file, hashResults));

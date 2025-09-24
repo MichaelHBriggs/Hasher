@@ -19,11 +19,6 @@ namespace HasherDataObjects.Models
             {
                 if (UpdatedAt != null)
                 {
-                    if ((UpdatedAt - CreatedAt).Value.TotalDays >= 1)
-                    {
-                        return 0;
-                    }
-
                     return (UpdatedAt! - CreatedAt).Value.TotalSeconds;
                 }
                 return 0;
