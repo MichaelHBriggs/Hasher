@@ -1,5 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { RunInfo } from '../app/run-info/run-info'
+import { LogInfo } from '../app/log-info/log-info'
 
 @Component({
   selector: 'app-root',
@@ -8,5 +9,5 @@ import { RunInfo } from '../app/run-info/run-info'
   styleUrl: './app.css'
 })
 export class App {
-  protected readonly title = signal('HasherWeb.Client');
+  protected readonly title = signal('Hasher Web Client');
 }

@@ -11,4 +11,5 @@ export interface JobInfo extends AuditableThing {
     mostRecentRun: RunResults | null;
     percentHashed: number;
     percentProcessed: number;
+    isActive: boolean;
 }

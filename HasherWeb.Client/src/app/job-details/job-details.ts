@@ -15,36 +15,36 @@ import { SecondsToHhMmSsPipe } from '../seconds-to-hh-mm-ss-pipe';
 
     <ng-container matColumnDef="name">
       <th mat-header-cell *matHeaderCellDef>Name</th>
-      <td mat-cell *matCellDef="let job">{{job.name}}</td>
+      <td mat-cell *matCellDef="let job" [class]="rowClass(job.isActive)">{{job.name}}</td>
     </ng-container>
 
     <ng-container matColumnDef="rootFolder">
       <th mat-header-cell *matHeaderCellDef>Root Folder</th>
-      <td mat-cell *matCellDef="let job">{{job.rootFolder}}</td>
+      <td mat-cell *matCellDef="let job" [class]="rowClass(job.isActive)">{{job.rootFolder}}</td>
     </ng-container>
 
     <ng-container matColumnDef="foundFilesCount">
       <th mat-header-cell *matHeaderCellDef># of Found Files</th>
-      <td mat-cell *matCellDef="let job">{{job.foundFilesCount}}</td>
+      <td mat-cell *matCellDef="let job" [class]="rowClass(job.isActive)">{{job.foundFilesCount}}</td>
     </ng-container>
 
     <ng-container matColumnDef="processedFilesCount">
       <th mat-header-cell *matHeaderCellDef># of Files Processed </th>
-      <td mat-cell *matCellDef="let job">{{job.processedFilesCount}}<br/>
+      <td mat-cell *matCellDef="let job" [class]="rowClass(job.isActive)">{{job.processedFilesCount}}<br/>
         <mat-progress-bar mode="determinate" value='{{job.percentProcessed}}'></mat-progress-bar>
       </td>
     </ng-container>
 
     <ng-container matColumnDef="filesHashedCount">
       <th mat-header-cell *matHeaderCellDef># of Files Hashed</th>
-      <td mat-cell *matCellDef="let job">{{job.filesHashedCount}}<br/>
+      <td mat-cell *matCellDef="let job" [class]="rowClass(job.isActive)">{{job.filesHashedCount}}<br/>
         <mat-progress-bar mode="determinate" value='{{job.percentHashed}}'></mat-progress-bar>
       </td>
     </ng-container>
 
     <ng-container matColumnDef="durationInSeconds">
       <th mat-header-cell *matHeaderCellDef>duration</th>
-      <td mat-cell *matCellDef="let job">{{job.durationInSeconds | secondsToHhMmSsPipe}}</td>
+      <td mat-cell *matCellDef="let job" [class]="rowClass(job.isActive)">{{job.durationInSeconds | secondsToHhMmSsPipe}}</td>
     </ng-container>
 
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
@@ -81,5 +81,12 @@ export class JobDetails {
       }
       this.cdr.markForCheck();
     })
+  }
+
+  rowClass(isActive:boolean): string {
+    if (isActive){
+      return "BlackText";
+    }
+    return "GrayText";
   }
 }

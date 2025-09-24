@@ -11,6 +11,7 @@ import { App } from './app';
 import { RunInfo } from '../app/run-info/run-info'
 import { RunRestService } from './RestServices/runs.rest.service';
 import { SecondsToHhMmSsPipe } from './seconds-to-hh-mm-ss-pipe';
+import { LogInfo } from '../app/log-info/log-info'
 
 @NgModule({
   declarations: [
@@ -21,6 +22,7 @@ import { SecondsToHhMmSsPipe } from './seconds-to-hh-mm-ss-pipe';
     AppRoutingModule,
     HttpClientModule,
     RunInfo,
+    LogInfo,
     MatGridListModule,
     SecondsToHhMmSsPipe
   ],
